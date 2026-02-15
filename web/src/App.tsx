@@ -1,12 +1,14 @@
-import AppShell from "./shell/AppShell";
-import ChatView from "./features/chat/ChatView";
-import RepoView from "./features/repo/RepoView";
+import React, { useState } from "react";
+import Layout from "./shell/Layout";
+import ChatPanel from "./features/chat/ChatPanel";
+import RepoExplorer from "./features/repo/RepoExplorer";
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<"chat" | "repo">("chat");
+
   return (
-    <AppShell>
-      <ChatView />
-      <RepoView />
-    </AppShell>
+    <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+      {activeTab === "chat" ? <ChatPanel /> : <RepoExplorer />}
+    </Layout>
   );
 }
