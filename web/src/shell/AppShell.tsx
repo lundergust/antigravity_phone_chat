@@ -1,12 +1,23 @@
-import MobileNav from "./MobileNav";
-import TopBar from "./TopBar";
+import { ReactNode, useState } from "react";
+import SideRail from "./SideRail";
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell({ children }: { children: ReactNode }) {
+  const [view, setView] = useState<"chat" | "repo">("chat");
+
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <TopBar />
-      <div style={{ flex: 1, overflow: "hidden" }}>{children}</div>
-      <MobileNav />
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        background: "var(--color-bg)",
+      }}
+    >
+      <SideRail active={view} onSelect={setView} />
+
+      <main style={{ flex: 1 }}>
+        {view === "chat" && children}
+        {view === "repo" && <div id="repo-root" />}
+      </main>
     </div>
   );
 }
