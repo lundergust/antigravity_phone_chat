@@ -1,88 +1,58 @@
-import { useAgentStore } from "./agentStore";
-import { useRepoStore } from "../repo/repoStore";
-import { socket } from "../chat/events";
+import React from "react";
+import { useAgentStore } from "./AgentStore";
+import { useRepoStore } from "../repo/RepoStore";
 
-export default function AgentPanel() {
-  const activeFile = useRepoStore((s) => s.activeFile);
-  const canExecute = useAgentStore((s) =>
-    activeFile ? s.canExecute(activeFile) : false
-  );
-  const quotas = useAgentStore((s) => s.quotas);
-  const grantPermission = useAgentStore((s) => s.grantPermission);
-  const revokePermission = useAgentStore((s) => s.revokePermission);
-  const decrementQuota = useAgentStore((s) => s.decrementQuota);
+interface Props {
+  ws: WebSocket | null;
+}
 
-  if (!activeFile) return null;
-
-  const handleGrant = () => grantPermission(activeFile);
-  const handleRevoke = () => revokePermission(activeFile);
-
-  const handleRun = () => {
-    if (!canExecute) return;
-    // Send run request to backend via WebSocket
-    socket.send(
-      JSON.stringify({
-        type: "execute_file",
-        payload: { path: activeFile },
-      })
-    );
-    decrementQuota();
-  };
+export default function AgentPanel({ ws }: Props) {
+  const { executionGranted, quota } = useAgentStore();
+  const { activeFile } = useRepoStore();
 
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "8px",
-        padding: "8px 16px",
-        borderTop: "1px solid var(--color-border)",
-        background: "var(--color-surface)",
-      }}
-    >
-      <button
-        onClick={handleGrant}
-        disabled={canExecute}
-        style={{
-          padding: "6px 12px",
-          borderRadius: "6px",
-          background: canExecute ? "var(--color-border)" : "var(--color-accent)",
-          color: canExecute ? "#888" : "#fff",
-          border: "none",
-          flex: 1,
-        }}
-      >
-        {canExecute ? "Granted" : "Grant Execute"}
-      </button>
+    <div style={{
+      borderTop: "1px solid #e0e0e0",
+      padding: 12,
+      background: "#ffffff"
+    }}>
+      <div style={{ fontWeight: 500, marginBottom: 6 }}>
+        Agent Controls
+      </div>
 
-      <button
-        onClick={handleRevoke}
-        disabled={!canExecute}
-        style={{
-          padding: "6px 12px",
-          borderRadius: "6px",
-          background: !canExecute ? "var(--color-border)" : "var(--color-accent)",
-          color: !canExecute ? "#888" : "#fff",
-          border: "none",
-          flex: 1,
-        }}
-      >
-        Revoke
-      </button>
+      <div style={{ fontSize: 14, marginBottom: 6 }}>
+        Execution: {executionGranted ? "Granted" : "Not granted"}
+      </div>
 
-      <button
-        onClick={handleRun}
-        disabled={!canExecute || quotas <= 0}
-        style={{
-          padding: "6px 12px",
-          borderRadius: "6px",
-          background: canExecute && quotas > 0 ? "var(--color-accent)" : "var(--color-border)",
-          color: canExecute && quotas > 0 ? "#fff" : "#888",
-          border: "none",
-          flex: 1,
-        }}
-      >
-        Run ({quotas})
-      </button>
+      <div style={{ fontSize: 14, marginBottom: 12 }}>
+        Quota remaining: {quota}
+      </div>
+
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button
+          onClick={() => ws?.send(JSON.stringify({ type: "grant_execution" }))}
+        >
+          Grant
+        </button>
+
+        <button
+          onClick={() => ws?.send(JSON.stringify({ type: "revoke_execution" }))}
+        >
+          Revoke
+        </button>
+
+        <button
+          disabled={!activeFile || !executionGranted}
+          onClick={() =>
+            ws?.send(JSON.stringify({
+              type: "run_file",
+              filePath: activeFile.path
+            }))
+          }
+        >
+          Run File
+        </button>
+      </div>
     </div>
   );
 }

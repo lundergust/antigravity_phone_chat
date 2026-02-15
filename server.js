@@ -9,41 +9,109 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Serve React build
+/* ------------------ STATIC FRONTEND ------------------ */
+
 app.use(express.static(path.join(__dirname, "web/dist")));
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "web/dist/index.html"));
 });
 
-// Start HTTP server
+/* ------------------ SERVER ------------------ */
+
 const server = app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
-// WebSocket server for chat and execution
+/* ------------------ WEBSOCKET ------------------ */
+
 const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
-  console.log("WebSocket client connected");
+  console.log("WS connected");
 
-  ws.on("message", (msg) => {
+  let executionGranted = false;
+  let quota = 10;
+
+  ws.send(JSON.stringify({
+    type: "agent_status",
+    executionGranted,
+    quota
+  }));
+
+  ws.on("message", (raw) => {
+    let msg;
     try {
-      const data = JSON.parse(msg.toString());
+      msg = JSON.parse(raw.toString());
+    } catch {
+      return;
+    }
 
-      if (data.type === "chat") {
-        // Echo message for now
-        ws.send(JSON.stringify({ type: "chat", message: `Agent: Received "${data.message}"` }));
+    /* -------- CHAT -------- */
+    if (msg.type === "chat") {
+      ws.send(JSON.stringify({
+        type: "chat",
+        sender: "agent",
+        message: `Agent received: "${msg.message}"`
+      }));
+    }
+
+    /* -------- EXECUTION PERMISSION -------- */
+    if (msg.type === "grant_execution") {
+      executionGranted = true;
+      ws.send(JSON.stringify({
+        type: "agent_status",
+        executionGranted,
+        quota
+      }));
+    }
+
+    if (msg.type === "revoke_execution") {
+      executionGranted = false;
+      ws.send(JSON.stringify({
+        type: "agent_status",
+        executionGranted,
+        quota
+      }));
+    }
+
+    /* -------- RUN FILE -------- */
+    if (msg.type === "run_file") {
+      if (!executionGranted) {
+        ws.send(JSON.stringify({
+          type: "execution_result",
+          success: false,
+          output: "Execution denied: permission not granted"
+        }));
+        return;
       }
 
-      if (data.type === "run") {
-        // Mock execution response
-        ws.send(JSON.stringify({ type: "run", output: `Executed ${data.file}` }));
+      if (quota <= 0) {
+        ws.send(JSON.stringify({
+          type: "execution_result",
+          success: false,
+          output: "Quota exceeded"
+        }));
+        return;
       }
 
-    } catch (err) {
-      console.error(err);
+      quota--;
+
+      ws.send(JSON.stringify({
+        type: "execution_result",
+        success: true,
+        output: `Executed file: ${msg.filePath}`
+      }));
+
+      ws.send(JSON.stringify({
+        type: "agent_status",
+        executionGranted,
+        quota
+      }));
     }
   });
 
-  ws.on("close", () => console.log("WebSocket client disconnected"));
+  ws.on("close", () => {
+    console.log("WS disconnected");
+  });
 });

@@ -1,4 +1,4 @@
-import { addMessage, useChatStore } from "./chatStore";
+import { addMessage, useChatStore } from "./ChatStore";
 
 /**
  * Determine WebSocket URL from current origin

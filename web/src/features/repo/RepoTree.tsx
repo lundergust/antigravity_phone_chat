@@ -1,4 +1,4 @@
-import { RepoFile, useRepoStore } from "./repoStore";
+import { RepoFile, useRepoStore } from "./RepoStore";
 
 function TreeNode({ node }: { node: RepoFile }) {
   const setActiveFile = useRepoStore((s) => s.setActiveFile);

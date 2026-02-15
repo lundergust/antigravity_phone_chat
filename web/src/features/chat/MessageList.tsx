@@ -1,4 +1,4 @@
-import { useChatStore } from "./chatStore";
+import { useChatStore } from "./ChatStore";
 import MessageItem from "./MessageItem";
 
 export default function MessageList() {

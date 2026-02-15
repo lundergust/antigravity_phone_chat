@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { socket } from "./events";
-import { addMessage } from "./chatStore";
+import { addMessage } from "./ChatStore";
 
 export default function ChatInput() {
   const [text, setText] = useState("");

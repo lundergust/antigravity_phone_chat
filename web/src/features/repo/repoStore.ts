@@ -1,63 +1,23 @@
-import { create } from "zustand";
+import create from "zustand";
 
-export type RepoFile = {
+export interface FileNode {
+  name: string;
   path: string;
-  type: "file" | "dir";
-  children?: RepoFile[];
-};
+  content: string;
+}
 
-type RepoState = {
-  tree: RepoFile[];
-  activeFile: string | null;
-  fileContents: string;
-  originalContents: string;
-  dirty: boolean;
+interface RepoState {
+  files: FileNode[];
+  activeFile: FileNode | null;
+  setFiles: (files: FileNode[]) => void;
+  open: (file: FileNode) => void;
+}
 
-  setActiveFile: (path: string, contents: string) => void;
-  updateFileContents: (contents: string) => void;
-  saveFile: () => void;
-};
-
-export const useRepoStore = create<RepoState>((set, get) => ({
-  tree: [
-    {
-      path: "src",
-      type: "dir",
-      children: [
-        { path: "src/app.js", type: "file" },
-        { path: "src/utils.js", type: "file" },
-      ],
-    },
-    { path: "README.md", type: "file" },
+export const useRepoStore = create<RepoState>((set) => ({
+  files: [
+    { name: "example.js", path: "/example.js", content: "console.log('hello');" }
   ],
   activeFile: null,
-  fileContents: "",
-  originalContents: "",
-  dirty: false,
-
-  setActiveFile: (path, contents) =>
-    set({
-      activeFile: path,
-      fileContents: contents,
-      originalContents: contents,
-      dirty: false,
-    }),
-
-  updateFileContents: (contents) => {
-    const original = get().originalContents;
-    set({
-      fileContents: contents,
-      dirty: contents !== original,
-    });
-  },
-
-  saveFile: () => {
-    // For now, this is UI-only
-    const current = get();
-    console.log(`[repo] Saving ${current.activeFile}`);
-    set({
-      originalContents: current.fileContents,
-      dirty: false,
-    });
-  },
+  setFiles: (files) => set({ files }),
+  open: (file) => set({ activeFile: file })
 }));
