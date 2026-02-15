@@ -1,7 +1,8 @@
 import MessageItem from "./MessageItem";
+import { useChatStore } from "./chatStore";
 
 export default function MessageList() {
-  const messages = []; // will connect to real state later
+  const messages = useChatStore((state) => state.messages);
 
   return (
     <div
@@ -12,11 +13,7 @@ export default function MessageList() {
       }}
     >
       {messages.map((message, idx) => (
-        <MessageItem
-          key={idx}
-          text={message.text}
-          sender={message.sender}
-        />
+        <MessageItem key={idx} text={message.text} sender={message.sender} />
       ))}
     </div>
   );
