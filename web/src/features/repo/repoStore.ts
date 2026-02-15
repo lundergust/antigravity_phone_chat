@@ -10,11 +10,15 @@ type RepoState = {
   tree: RepoFile[];
   activeFile: string | null;
   fileContents: string;
+  originalContents: string;
+  dirty: boolean;
 
   setActiveFile: (path: string, contents: string) => void;
+  updateFileContents: (contents: string) => void;
+  saveFile: () => void;
 };
 
-export const useRepoStore = create<RepoState>((set) => ({
+export const useRepoStore = create<RepoState>((set, get) => ({
   tree: [
     {
       path: "src",
@@ -26,13 +30,34 @@ export const useRepoStore = create<RepoState>((set) => ({
     },
     { path: "README.md", type: "file" },
   ],
-
   activeFile: null,
   fileContents: "",
+  originalContents: "",
+  dirty: false,
 
   setActiveFile: (path, contents) =>
     set({
       activeFile: path,
       fileContents: contents,
+      originalContents: contents,
+      dirty: false,
     }),
+
+  updateFileContents: (contents) => {
+    const original = get().originalContents;
+    set({
+      fileContents: contents,
+      dirty: contents !== original,
+    });
+  },
+
+  saveFile: () => {
+    // For now, this is UI-only
+    const current = get();
+    console.log(`[repo] Saving ${current.activeFile}`);
+    set({
+      originalContents: current.fileContents,
+      dirty: false,
+    });
+  },
 }));
