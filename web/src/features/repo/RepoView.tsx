@@ -19,7 +19,9 @@ export default function RepoView() {
         <RepoTree />
       </div>
 
-      <FileViewer />
+      <div style={{ height: "100%" }}>
+        <FileViewer />
+      </div>
     </div>
   );
 }
