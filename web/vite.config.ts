@@ -7,6 +7,15 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname, "src") }
   },
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    proxy: {
+      '/ws': {
+        target: 'ws://localhost:3000',
+        ws: true,
+        rewrite: (path) => path.replace(/^\/ws/, '')
+      }
+    }
+  },
   build: { outDir: "dist", emptyOutDir: true }
 });
