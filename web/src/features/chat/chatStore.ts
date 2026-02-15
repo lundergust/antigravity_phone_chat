@@ -1,23 +1,45 @@
-import create from "zustand";
+import { create } from "zustand";
 
-export interface ChatMessage {
+/**
+ * One chat message
+ */
+export type ChatMessage = {
   sender: "user" | "agent";
   text: string;
-}
+};
 
-interface ChatState {
+/**
+ * Central chat state
+ */
+type ChatState = {
   messages: ChatMessage[];
-  addMessage: (msg: ChatMessage) => void;
-}
+  typing: boolean;
 
+  addMessage: (message: ChatMessage) => void;
+  setTyping: (value: boolean) => void;
+};
+
+/**
+ * Zustand store
+ */
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
-  addMessage: (msg) =>
+  typing: false,
+
+  addMessage: (message) =>
     set((state) => ({
-      messages: [...state.messages, msg],
+      messages: [...state.messages, message],
     })),
+
+  setTyping: (value) =>
+    set({
+      typing: value,
+    }),
 }));
 
-// Helpers for events.ts
-export const addMessage = (msg: ChatMessage) =>
-  useChatStore.getState().addMessage(msg);
+/**
+ * Convenience helper for non-React files
+ */
+export const addMessage = (message: ChatMessage) => {
+  useChatStore.getState().addMessage(message);
+};
