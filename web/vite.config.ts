@@ -5,15 +5,8 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"),
-    },
+    alias: { "@": path.resolve(__dirname, "src") }
   },
-  server: {
-    port: 5173
-  },
-  build: {
-    outDir: "dist",
-    emptyOutDir: true
-  }
+  server: { port: 5173 },
+  build: { outDir: "dist", emptyOutDir: true }
 });
