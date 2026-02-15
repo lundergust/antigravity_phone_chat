@@ -1,6 +1,9 @@
 import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
 
+/**
+ * Vertical chat layout
+ */
 export default function ChatView() {
   return (
     <div
