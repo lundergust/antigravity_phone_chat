@@ -1,28 +1,60 @@
-import { w3cwebsocket as W3CWebSocket } from "websocket";
-import { addMessage } from "./chatStore";
+import { addMessage, useChatStore } from "./chatStore";
 
-// Create a global singleton
-export const socket = new W3CWebSocket(
-  `${window.location.protocol.replace("http", "ws")}//${window.location.host}`
-);
+/**
+ * Determine WebSocket URL from current origin
+ */
+const protocol =
+  window.location.protocol === "https:" ? "wss://" : "ws://";
 
-// When the socket opens
+const socketUrl = protocol + window.location.host;
+
+/**
+ * Open WebSocket connection
+ */
+export const socket = new WebSocket(socketUrl);
+
+/**
+ * Connection opened
+ */
 socket.onopen = () => {
-  console.log("Connected to Antigravity backend");
+  console.log("[chat] WebSocket connected");
 };
 
-// On message from backend
-socket.onmessage = (msg) => {
+/**
+ * Incoming messages from Antigravity
+ */
+socket.onmessage = (event) => {
   try {
-    const data = JSON.parse(msg.data as string);
+    const data = JSON.parse(event.data);
 
+    /**
+     * Agent sent a message
+     */
     if (data.type === "chat_message") {
       addMessage({
+        sender: "agent",
         text: data.payload.text,
-        sender: data.payload.sender,
       });
     }
-  } catch (e) {
-    console.error("Invalid message from backend", e);
+
+    /**
+     * Agent typing indicator
+     */
+    if (data.type === "typing") {
+      useChatStore.getState().setTyping(true);
+    }
+
+    if (data.type === "stop_typing") {
+      useChatStore.getState().setTyping(false);
+    }
+  } catch (err) {
+    console.error("[chat] Invalid message", err);
   }
+};
+
+/**
+ * Connection closed
+ */
+socket.onclose = () => {
+  console.warn("[chat] WebSocket disconnected");
 };
