@@ -1,37 +1,30 @@
-type Props = {
-  active: "chat" | "repo";
-  onSelect: (view: "chat" | "repo") => void;
-};
+import React from "react";
 
-export default function SideRail({ active, onSelect }: Props) {
-  const buttonStyle = (isActive: boolean) => ({
-    padding: "12px",
-    background: isActive
-      ? "var(--color-accent)"
-      : "transparent",
-    color: isActive ? "#fff" : "inherit",
-    border: "none",
-    width: "100%",
-  });
+interface SideRailProps {
+  activeTab: "chat" | "repo";
+  setActiveTab: (tab: "chat" | "repo") => void;
+}
 
+export default function SideRail({ activeTab, setActiveTab }: SideRailProps) {
   return (
-    <nav
-      style={{
-        width: "56px",
-        borderRight: "1px solid var(--color-border)",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <nav style={{
+      width: 60,
+      background: "#ffffff",
+      borderRight: "1px solid #e0e0e0",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      paddingTop: 10
+    }}>
       <button
-        style={buttonStyle(active === "chat")}
-        onClick={() => onSelect("chat")}
+        style={{ margin: 10, background: "none", border: "none", fontSize: 24, color: activeTab === "chat" ? "#1a73e8" : "#5f6368" }}
+        onClick={() => setActiveTab("chat")}
       >
         💬
       </button>
       <button
-        style={buttonStyle(active === "repo")}
-        onClick={() => onSelect("repo")}
+        style={{ margin: 10, background: "none", border: "none", fontSize: 24, color: activeTab === "repo" ? "#1a73e8" : "#5f6368" }}
+        onClick={() => setActiveTab("repo")}
       >
         📁
       </button>
