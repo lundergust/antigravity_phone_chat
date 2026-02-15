@@ -1,7 +1,26 @@
 import { useState } from "react";
+import { socket } from "./events";
+import { addMessage } from "./chatStore";
 
 export default function ChatInput() {
   const [draft, setDraft] = useState("");
+
+  const sendMessage = () => {
+    if (!draft.trim()) return;
+
+    // Add user message locally
+    addMessage({ sender: "user", text: draft });
+
+    // Send to backend
+    socket.send(
+      JSON.stringify({
+        type: "chat_message",
+        payload: { text: draft },
+      })
+    );
+
+    setDraft("");
+  };
 
   return (
     <div
@@ -33,6 +52,7 @@ export default function ChatInput() {
           background: "var(--color-accent)",
           color: "#fff",
         }}
+        onClick={sendMessage}
       >
         Send
       </button>
