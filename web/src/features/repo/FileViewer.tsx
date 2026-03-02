@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useRepoStore } from "./repoStore";
 import Editor from "@monaco-editor/react";
+import AgentPanel from "../agent/AgentPanel";
 
 export default function FileViewer() {
   const activeFile = useRepoStore((s) => s.activeFile);
@@ -66,6 +67,8 @@ export default function FileViewer() {
           }}
         />
       </div>
+
+      <AgentPanel />
     </div>
   );
 }
